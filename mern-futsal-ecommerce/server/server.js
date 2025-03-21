@@ -12,6 +12,7 @@ import mongoose from 'mongoose';
 // Import routes
 import userRoutes from './routes/userRoutes.js';
 import productRoutes from './routes/productRoutes.js';
+import futsalCourtRoutes from './routes/futsalCourtRoutes.js';
 
 // Get the directory path
 const __filename = fileURLToPath(import.meta.url);
@@ -27,7 +28,10 @@ connectDB();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:3000'],
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
@@ -35,6 +39,7 @@ app.use(morgan('dev'));
 // Use routes
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/futsal-courts', futsalCourtRoutes);
 
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, '/uploads')));

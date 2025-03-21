@@ -34,6 +34,12 @@ const Header = () => {
               Products
             </Link>
             <Link
+              to="/booking"
+              className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
+            >
+              Book Court
+            </Link>
+            <Link
               to="/cart"
               className="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium"
             >
@@ -114,6 +120,13 @@ const Header = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Products
+              </Link>
+              <Link
+                to="/booking"
+                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-100 rounded-md"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Book Court
               </Link>
               <Link
                 to="/cart"

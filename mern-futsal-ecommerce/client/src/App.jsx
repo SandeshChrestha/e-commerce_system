@@ -25,7 +25,10 @@ import AdminProductList from './components/admin/AdminProductList';
 import AdminProductForm from './components/admin/AdminProductForm';
 import AdminUserList from './components/admin/AdminUserList';
 import AdminUserForm from './components/admin/AdminUserForm';
+import AdminCourtList from './components/admin/AdminCourtList';
+import AdminCourtForm from './components/admin/AdminCourtForm';
 import Cart from './components/cart/Cart';
+import Booking from './components/booking/Booking';
 
 const App = () => {
   return (
@@ -41,6 +44,7 @@ const App = () => {
               <Route path="/product/:id" element={<ProductDetails />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/booking" element={<Booking />} />
               <Route
                 path="/profile"
                 element={
@@ -105,6 +109,31 @@ const App = () => {
                 element={
                   <AdminRoute>
                     <AdminUserForm />
+                  </AdminRoute>
+                }
+              />
+              {/* Court Management Routes */}
+              <Route
+                path="/admin/courts"
+                element={
+                  <AdminRoute>
+                    <AdminCourtList />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/courts/new"
+                element={
+                  <AdminRoute>
+                    <AdminCourtForm />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/courts/edit/:id"
+                element={
+                  <AdminRoute>
+                    <AdminCourtForm />
                   </AdminRoute>
                 }
               />

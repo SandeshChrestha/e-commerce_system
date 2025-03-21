@@ -77,6 +77,34 @@ const AdminDashboard = () => {
             </div>
           </div>
         </div>
+
+        {/* Courts Management */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-semibold text-gray-700 mb-4">Futsal Courts</h2>
+          <div className="space-y-4">
+            <Link
+              to="/admin/courts"
+              className="block bg-blue-50 hover:bg-blue-100 p-4 rounded-lg transition-colors"
+            >
+              <h3 className="text-lg font-medium text-blue-700">View All Courts</h3>
+              <p className="text-blue-600">Manage futsal courts and bookings</p>
+            </Link>
+          </div>
+        </div>
+
+        {/* Bookings Overview */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-semibold text-gray-700 mb-4">Bookings</h2>
+          <div className="space-y-4">
+            <Link
+              to="/admin/bookings"
+              className="block bg-purple-50 hover:bg-purple-100 p-4 rounded-lg transition-colors"
+            >
+              <h3 className="text-lg font-medium text-purple-700">View All Bookings</h3>
+              <p className="text-purple-600">View and manage court bookings</p>
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );
