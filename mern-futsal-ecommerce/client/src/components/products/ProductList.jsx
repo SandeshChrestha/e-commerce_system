@@ -1,17 +1,71 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { getProducts } from '../../redux/slices/productSlice';
 import { addToCart } from '../../redux/slices/cartSlice';
 import { toast } from 'react-toastify';
+import ProductCard from './ProductCard';
 
 const ProductList = () => {
   const dispatch = useDispatch();
-  const { products = [], loading, error } = useSelector((state) => state.product);
+  const [searchParams] = useSearchParams();
+  const { products, loading, error } = useSelector((state) => state.product);
+
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '');
+  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
+  const [sortBy, setSortBy] = useState('newest');
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 12;
+
+  // Get unique categories from products
+  const categories = [...new Set(products.map(product => product.category))];
 
   useEffect(() => {
     dispatch(getProducts());
   }, [dispatch]);
+
+  // Update selected category when URL changes
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get('category');
+    if (categoryFromUrl) {
+      setSelectedCategory(categoryFromUrl);
+    }
+  }, [searchParams]);
+
+  // Filter and sort products
+  const filteredProducts = products
+    .filter(product => {
+      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           product.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = !selectedCategory || product.category === selectedCategory;
+      const matchesPrice = (!priceRange.min || product.price >= Number(priceRange.min)) &&
+                          (!priceRange.max || product.price <= Number(priceRange.max));
+      return matchesSearch && matchesCategory && matchesPrice;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'price-low':
+          return a.price - b.price;
+        case 'price-high':
+          return b.price - a.price;
+        case 'name':
+          return a.name.localeCompare(b.name);
+        default:
+          return new Date(b.createdAt) - new Date(a.createdAt);
+      }
+    });
+
+  // Pagination
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
 
   const handleAddToCart = (product) => {
     dispatch(addToCart(product));
@@ -26,70 +80,127 @@ const ProductList = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900 text-center mb-8">
-          Futsal Shop
-        </h1>
+  if (error) {
+    toast.error(error);
+  }
 
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6" role="alert">
-            <span className="block sm:inline">{error}</span>
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Search and Filter Section */}
+      <div className="bg-white rounded-lg shadow p-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Search Input */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Search Products
+            </label>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by name or description..."
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            />
           </div>
-        )}
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.isArray(products) && products.length > 0 ? (
-            products.map((product) => (
-              <div key={product._id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="relative h-48 bg-gray-200">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='18' fill='%236b7280'%3E${product.name}%3C/text%3E%3C/svg%3E`;
-                    }}
-                  />
-                </div>
-                <div className="p-4">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                    {product.name}
-                  </h2>
-                  <p className="text-gray-600 text-sm mb-4">
-                    {product.description}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-xl font-bold text-blue-600">${product.price}</span>
-                      <span className="text-sm text-gray-500 ml-2">({product.brand})</span>
-                    </div>
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleAddToCart(product)}
-                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-                      >
-                        Add to Cart
-                      </button>
-                      <Link
-                        to={`/product/${product._id}`}
-                        className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 transition-colors"
-                      >
-                        Details
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="col-span-full text-center text-gray-500 py-12">
-              No products available at the moment.
+
+          {/* Category Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Category
+            </label>
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            >
+              <option value="">All Categories</option>
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Price Range Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Price Range
+            </label>
+            <div className="flex space-x-2">
+              <input
+                type="number"
+                value={priceRange.min}
+                onChange={(e) => setPriceRange({ ...priceRange, min: e.target.value })}
+                placeholder="Min"
+                className="w-1/2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+              <input
+                type="number"
+                value={priceRange.max}
+                onChange={(e) => setPriceRange({ ...priceRange, max: e.target.value })}
+                placeholder="Max"
+                className="w-1/2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
             </div>
-          )}
+          </div>
+
+          {/* Sort Options */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Sort By
+            </label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            >
+              <option value="newest">Newest First</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="name">Name: A to Z</option>
+            </select>
+          </div>
         </div>
       </div>
+
+      {/* Products Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {currentProducts.map((product) => (
+          <ProductCard key={product._id} product={product} />
+        ))}
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-8 flex justify-center">
+          <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+            {[...Array(totalPages)].map((_, index) => (
+              <button
+                key={index + 1}
+                onClick={() => handlePageChange(index + 1)}
+                className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                  currentPage === index + 1
+                    ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                }`}
+              >
+                {index + 1}
+              </button>
+            ))}
+          </nav>
+        </div>
+      )}
+
+      {/* No Results Message */}
+      {filteredProducts.length === 0 && (
+        <div className="text-center py-12">
+          <h3 className="text-lg font-medium text-gray-900">No products found</h3>
+          <p className="mt-2 text-sm text-gray-500">
+            Try adjusting your search or filter criteria
+          </p>
+        </div>
+      )}
     </div>
   );
 };

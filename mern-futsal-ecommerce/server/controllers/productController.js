@@ -1,10 +1,11 @@
 import asyncHandler from 'express-async-handler';
 import Product from '../models/productModel.js';
+import cloudinary from '../config/cloudinary.js';
 
 // @desc    Fetch all products
 // @route   GET /api/products
 // @access  Public
-const getProducts = asyncHandler(async (req, res) => {
+export const getProducts = asyncHandler(async (req, res) => {
   const pageSize = 12;
   const page = Number(req.query.pageNumber) || 1;
 
@@ -28,7 +29,7 @@ const getProducts = asyncHandler(async (req, res) => {
 // @desc    Fetch single product
 // @route   GET /api/products/:id
 // @access  Public
-const getProductById = asyncHandler(async (req, res) => {
+export const getProductById = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
 
   if (product) {
@@ -42,7 +43,7 @@ const getProductById = asyncHandler(async (req, res) => {
 // @desc    Create a product
 // @route   POST /api/products
 // @access  Private/Admin
-const createProduct = asyncHandler(async (req, res) => {
+export const createProduct = asyncHandler(async (req, res) => {
   const {
     name,
     price,
@@ -53,11 +54,27 @@ const createProduct = asyncHandler(async (req, res) => {
     countInStock,
   } = req.body;
 
+  // Upload image to Cloudinary if image is provided
+  let imageUrl = image;
+  if (image && image.startsWith('data:image')) {
+    try {
+      const uploadResponse = await cloudinary.uploader.upload(image, {
+        folder: 'products',
+        resource_type: 'auto',
+      });
+      imageUrl = uploadResponse.secure_url;
+    } catch (error) {
+      console.error('Cloudinary upload error:', error);
+      res.status(400);
+      throw new Error('Failed to upload image');
+    }
+  }
+
   const product = new Product({
     name,
     price,
     user: req.user._id,
-    image,
+    image: imageUrl,
     brand,
     category,
     countInStock,
@@ -71,27 +88,41 @@ const createProduct = asyncHandler(async (req, res) => {
 // @desc    Update a product
 // @route   PUT /api/products/:id
 // @access  Private/Admin
-const updateProduct = asyncHandler(async (req, res) => {
-  const {
-    name,
-    price,
-    description,
-    image,
-    brand,
-    category,
-    countInStock,
-  } = req.body;
-
+export const updateProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
 
   if (product) {
-    product.name = name;
-    product.price = price;
-    product.description = description;
-    product.image = image;
-    product.brand = brand;
-    product.category = category;
-    product.countInStock = countInStock;
+    const {
+      name,
+      price,
+      description,
+      image,
+      brand,
+      category,
+      countInStock,
+    } = req.body;
+
+    // Handle image upload if new image is provided
+    let imageUrl = product.image;
+    if (image && image !== product.image) {
+      try {
+        const uploadResponse = await cloudinary.uploader.upload(image, {
+          folder: 'products',
+        });
+        imageUrl = uploadResponse.secure_url;
+      } catch (error) {
+        res.status(400);
+        throw new Error('Failed to upload image');
+      }
+    }
+
+    product.name = name || product.name;
+    product.price = price || product.price;
+    product.description = description || product.description;
+    product.image = imageUrl;
+    product.brand = brand || product.brand;
+    product.category = category || product.category;
+    product.countInStock = countInStock || product.countInStock;
 
     const updatedProduct = await product.save();
     res.json(updatedProduct);
@@ -104,22 +135,24 @@ const updateProduct = asyncHandler(async (req, res) => {
 // @desc    Delete a product
 // @route   DELETE /api/products/:id
 // @access  Private/Admin
-const deleteProduct = asyncHandler(async (req, res) => {
+export const deleteProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
 
   if (product) {
+    // Delete image from Cloudinary if it exists
+    if (product.image) {
+      try {
+        const publicId = product.image.split('/').pop().split('.')[0];
+        await cloudinary.uploader.destroy(`products/${publicId}`);
+      } catch (error) {
+        console.error('Failed to delete image from Cloudinary:', error);
+      }
+    }
+
     await product.deleteOne();
     res.json({ message: 'Product removed' });
   } else {
     res.status(404);
     throw new Error('Product not found');
   }
-});
-
-export {
-  getProducts,
-  getProductById,
-  createProduct,
-  updateProduct,
-  deleteProduct,
-}; 
+}); 

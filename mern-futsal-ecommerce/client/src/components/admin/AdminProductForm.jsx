@@ -1,227 +1,216 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
-import { createProduct, updateProduct, fetchProductDetails } from '../../redux/slices/productSlice';
+import { createProduct, updateProduct } from '../../redux/slices/productSlice';
+import { toast } from 'react-toastify';
 
 const AdminProductForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   
-  const { product, loading, error } = useSelector((state) => state.product);
-  
+  const { products, loading, error } = useSelector((state) => state.product);
+  const { user } = useSelector((state) => state.auth);
+
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
     price: '',
-    category: '',
-    brand: '',
+    description: '',
     image: '',
+    brand: '',
+    category: '',
     countInStock: '',
   });
 
+  const [imagePreview, setImagePreview] = useState('');
+
   useEffect(() => {
     if (id) {
-      dispatch(fetchProductDetails(id));
+      const product = products.find((p) => p._id === id);
+      if (product) {
+        setFormData({
+          name: product.name,
+          price: product.price,
+          description: product.description,
+          image: product.image,
+          brand: product.brand,
+          category: product.category,
+          countInStock: product.countInStock,
+        });
+        setImagePreview(product.image);
+      }
     }
-  }, [dispatch, id]);
+  }, [id, products]);
 
-  useEffect(() => {
-    if (id && product) {
-      setFormData({
-        name: product.name || '',
-        description: product.description || '',
-        price: product.price?.toString() || '',
-        category: product.category || '',
-        brand: product.brand || '',
-        image: product.image || '',
-        countInStock: product.countInStock?.toString() || '',
-      });
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image size should be less than 5MB');
+        return;
+      }
+
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please upload an image file');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+        setFormData({ ...formData, image: reader.result });
+      };
+      reader.readAsDataURL(file);
     }
-  }, [id, product]);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    const productData = {
-      ...formData,
-      price: Number(formData.price),
-      countInStock: Number(formData.countInStock),
-    };
+    if (!user || !user.isAdmin) {
+      toast.error('You must be logged in as an admin to perform this action');
+      return;
+    }
 
     try {
       if (id) {
-        await dispatch(updateProduct({ id, productData })).unwrap();
+        await dispatch(updateProduct({ id, productData: formData })).unwrap();
+        toast.success('Product updated successfully');
       } else {
-        await dispatch(createProduct(productData)).unwrap();
+        await dispatch(createProduct(formData)).unwrap();
+        toast.success('Product created successfully');
       }
       navigate('/admin/products');
     } catch (err) {
-      console.error('Failed to save product:', err);
+      toast.error(err || 'Failed to save product');
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-3xl mx-auto px-4">
-        <h1 className="text-3xl font-bold text-center text-gray-900 mb-8">
-          {id ? 'Edit Product' : 'Add New Product'}
-        </h1>
+    <div className="max-w-2xl mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-6">
+        {id ? 'Edit Product' : 'Add New Product'}
+      </h1>
 
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6" role="alert">
-            <span className="block sm:inline">{error}</span>
-          </div>
-        )}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Name
+          </label>
+          <input
+            type="text"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            required
+          />
+        </div>
 
-        <form onSubmit={handleSubmit} className="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4">
-          <div className="grid grid-cols-1 gap-6">
-            <div>
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
-                Product Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                required
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Price
+          </label>
+          <input
+            type="number"
+            value={formData.price}
+            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Description
+          </label>
+          <textarea
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            rows="3"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Image
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="mt-1 block w-full"
+          />
+          {imagePreview && (
+            <div className="mt-2">
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="h-32 w-32 object-cover rounded-md"
               />
             </div>
+          )}
+        </div>
 
-            <div>
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="brand">
-                Brand
-              </label>
-              <input
-                type="text"
-                id="brand"
-                name="brand"
-                value={formData.brand}
-                onChange={handleInputChange}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                required
-              />
-            </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Brand
+          </label>
+          <input
+            type="text"
+            value={formData.brand}
+            onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            required
+          />
+        </div>
 
-            <div>
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="description">
-                Description
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                rows="4"
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                required
-              />
-            </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Category
+          </label>
+          <input
+            type="text"
+            value={formData.category}
+            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            required
+          />
+        </div>
 
-            <div>
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="price">
-                Price
-              </label>
-              <input
-                type="number"
-                id="price"
-                name="price"
-                value={formData.price}
-                onChange={handleInputChange}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                required
-                min="0"
-                step="0.01"
-              />
-            </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Count in Stock
+          </label>
+          <input
+            type="number"
+            value={formData.countInStock}
+            onChange={(e) => setFormData({ ...formData, countInStock: e.target.value })}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            required
+          />
+        </div>
 
-            <div>
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="category">
-                Category
-              </label>
-              <select
-                id="category"
-                name="category"
-                value={formData.category}
-                onChange={handleInputChange}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                required
-              >
-                <option value="">Select Category</option>
-                <option value="shoes">Shoes</option>
-                <option value="balls">Balls</option>
-                <option value="accessories">Accessories</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="image">
-                Image URL
-              </label>
-              <input
-                type="text"
-                id="image"
-                name="image"
-                value={formData.image}
-                onChange={handleInputChange}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="countInStock">
-                Stock Count
-              </label>
-              <input
-                type="number"
-                id="countInStock"
-                name="countInStock"
-                value={formData.countInStock}
-                onChange={handleInputChange}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                required
-                min="0"
-              />
-            </div>
-
-            <div className="flex items-center justify-between pt-4">
-              <button
-                type="button"
-                onClick={() => navigate('/admin/products')}
-                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              >
-                {id ? 'Update Product' : 'Create Product'}
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
+        <div className="flex justify-end space-x-3">
+          <button
+            type="button"
+            onClick={() => navigate('/admin/products')}
+            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+          >
+            {loading ? 'Saving...' : id ? 'Update Product' : 'Create Product'}
+          </button>
+        </div>
+      </form>
     </div>
   );
 };
