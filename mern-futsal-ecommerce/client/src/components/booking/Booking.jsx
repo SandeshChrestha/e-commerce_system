@@ -94,7 +94,7 @@ const Booking = () => {
                     <h3 className="font-medium">{court.name}</h3>
                     <p className="text-gray-600">Type: {court.type}</p>
                     <p className="text-blue-600 font-medium">
-                      ${court.pricePerHour}/hour
+                      Rs {court.pricePerHour}/hour
                     </p>
                     <p className="text-sm text-gray-500">
                       Operating Hours: {court.openingTime} - {court.closingTime}

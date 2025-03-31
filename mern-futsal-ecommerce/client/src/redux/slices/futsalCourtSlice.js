@@ -30,7 +30,7 @@ export const fetchCourts = createAsyncThunk(
   async (_, { rejectWithValue, getState }) => {
     try {
       const { data } = await axios.get('/api/futsal-courts', getConfig(getState));
-      return Array.isArray(data) ? data : [];
+      return data;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || error.message || 'Failed to fetch courts'
@@ -39,8 +39,22 @@ export const fetchCourts = createAsyncThunk(
   }
 );
 
-export const createCourt = createAsyncThunk(
-  'futsalCourt/createCourt',
+export const getFutsalCourtById = createAsyncThunk(
+  'futsalCourt/getFutsalCourtById',
+  async (id, { rejectWithValue, getState }) => {
+    try {
+      const { data } = await axios.get(`/api/futsal-courts/${id}`, getConfig(getState));
+      return data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || error.message || 'Failed to fetch court details'
+      );
+    }
+  }
+);
+
+export const createFutsalCourt = createAsyncThunk(
+  'futsalCourt/createFutsalCourt',
   async (courtData, { rejectWithValue, getState }) => {
     try {
       const { data } = await axios.post('/api/futsal-courts', courtData, getConfig(getState));
@@ -53,9 +67,9 @@ export const createCourt = createAsyncThunk(
   }
 );
 
-export const updateCourt = createAsyncThunk(
-  'futsalCourt/updateCourt',
-  async ({ id, courtData }, { rejectWithValue, getState }) => {
+export const updateFutsalCourt = createAsyncThunk(
+  'futsalCourt/updateFutsalCourt',
+  async ({ id, ...courtData }, { rejectWithValue, getState }) => {
     try {
       const { data } = await axios.put(`/api/futsal-courts/${id}`, courtData, getConfig(getState));
       return data;
@@ -67,12 +81,12 @@ export const updateCourt = createAsyncThunk(
   }
 );
 
-export const deleteCourt = createAsyncThunk(
-  'futsalCourt/deleteCourt',
+export const deleteFutsalCourt = createAsyncThunk(
+  'futsalCourt/deleteFutsalCourt',
   async (id, { rejectWithValue, getState }) => {
     try {
-      await axios.delete(`/api/futsal-courts/${id}`, getConfig(getState));
-      return id;
+      const { data } = await axios.delete(`/api/futsal-courts/${id}`, getConfig(getState));
+      return data;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || error.message || 'Failed to delete court'
@@ -114,12 +128,18 @@ const futsalCourtSlice = createSlice({
   name: 'futsalCourt',
   initialState: {
     courts: [],
+    court: null,
     bookings: [],
     loading: false,
     error: null,
     success: false,
   },
   reducers: {
+    reset: (state) => {
+      state.loading = false;
+      state.error = null;
+      state.success = false;
+    },
     clearError: (state) => {
       state.error = null;
     },
@@ -143,50 +163,68 @@ const futsalCourtSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      // Create court
-      .addCase(createCourt.pending, (state) => {
+      // Get court by ID
+      .addCase(getFutsalCourtById.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(createCourt.fulfilled, (state, action) => {
+      .addCase(getFutsalCourtById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.court = action.payload;
+        state.error = null;
+      })
+      .addCase(getFutsalCourtById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Create court
+      .addCase(createFutsalCourt.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createFutsalCourt.fulfilled, (state, action) => {
         state.loading = false;
         state.courts = [...state.courts, action.payload];
         state.success = true;
         state.error = null;
       })
-      .addCase(createCourt.rejected, (state, action) => {
+      .addCase(createFutsalCourt.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
       // Update court
-      .addCase(updateCourt.pending, (state) => {
+      .addCase(updateFutsalCourt.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(updateCourt.fulfilled, (state, action) => {
+      .addCase(updateFutsalCourt.fulfilled, (state, action) => {
         state.loading = false;
         state.courts = state.courts.map((court) =>
           court._id === action.payload._id ? action.payload : court
         );
+        state.court = action.payload;
         state.success = true;
         state.error = null;
       })
-      .addCase(updateCourt.rejected, (state, action) => {
+      .addCase(updateFutsalCourt.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
       // Delete court
-      .addCase(deleteCourt.pending, (state) => {
+      .addCase(deleteFutsalCourt.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(deleteCourt.fulfilled, (state, action) => {
+      .addCase(deleteFutsalCourt.fulfilled, (state, action) => {
         state.loading = false;
-        state.courts = state.courts.filter((court) => court._id !== action.payload);
+        state.courts = state.courts.filter(
+          (court) => court._id !== action.payload._id
+        );
+        state.court = null;
         state.success = true;
         state.error = null;
       })
-      .addCase(deleteCourt.rejected, (state, action) => {
+      .addCase(deleteFutsalCourt.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
@@ -225,5 +263,5 @@ const futsalCourtSlice = createSlice({
   },
 });
 
-export const { clearError, clearSuccess } = futsalCourtSlice.actions;
+export const { reset, clearError, clearSuccess } = futsalCourtSlice.actions;
 export default futsalCourtSlice.reducer; 

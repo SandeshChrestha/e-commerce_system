@@ -193,11 +193,11 @@ const OrderCreate = () => {
                   <div>
                     <p className="font-medium">{item.name}</p>
                     <p className="text-sm text-gray-600">
-                      {item.quantity} x ${item.price}
+                      {item.quantity} x Rs {item.price}
                     </p>
                   </div>
                   <p className="font-medium">
-                    ${(item.quantity * item.price).toFixed(2)}
+                    Rs {(item.quantity * item.price).toFixed(2)}
                   </p>
                 </div>
               ))}
@@ -205,15 +205,15 @@ const OrderCreate = () => {
               <div className="border-t border-gray-200 pt-4 space-y-2">
                 <div className="flex justify-between text-gray-600">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>Rs {subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Tax (15%)</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>Rs {tax.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>Rs {total.toFixed(2)}</span>
                 </div>
               </div>
             </div>

@@ -1,7 +1,11 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { fetchCourts, deleteCourt } from '../../redux/slices/futsalCourtSlice';
+import { FaEdit, FaTrash } from 'react-icons/fa';
+import {
+  fetchCourts,
+  deleteFutsalCourt,
+} from '../../redux/slices/futsalCourtSlice';
 import { toast } from 'react-toastify';
 
 const AdminCourtList = () => {
@@ -15,7 +19,7 @@ const AdminCourtList = () => {
   const handleDelete = async (id, name) => {
     if (window.confirm(`Are you sure you want to delete ${name}?`)) {
       try {
-        await dispatch(deleteCourt(id)).unwrap();
+        await dispatch(deleteFutsalCourt(id)).unwrap();
         toast.success('Court deleted successfully');
       } catch (err) {
         toast.error(err || 'Failed to delete court');
@@ -62,14 +66,14 @@ const AdminCourtList = () => {
                     <div>
                       <h3 className="text-lg font-medium text-gray-900">{court.name}</h3>
                       <p className="text-sm text-gray-500">Type: {court.type}</p>
-                      <p className="text-sm text-gray-500">Price: ${court.pricePerHour}/hour</p>
+                      <p className="text-sm text-gray-500">Price: Rs {court.pricePerHour}/hour</p>
                       <p className="text-sm text-gray-500">
                         Operating Hours: {court.openingTime} - {court.closingTime}
                       </p>
                     </div>
                     <div className="flex space-x-3">
                       <Link
-                        to={`/admin/courts/edit/${court._id}`}
+                        to={`/admin/courts/${court._id}/edit`}
                         className="text-indigo-600 hover:text-indigo-900"
                       >
                         Edit

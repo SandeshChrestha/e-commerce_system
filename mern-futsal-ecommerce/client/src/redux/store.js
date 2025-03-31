@@ -4,6 +4,8 @@ import productReducer from './slices/productSlice';
 import userReducer from './slices/userSlice';
 import cartReducer from './slices/cartSlice';
 import futsalCourtReducer from './slices/futsalCourtSlice';
+import orderReducer from './slices/orderSlice';
+import bookingReducer from './slices/bookingSlice';
 
 const store = configureStore({
   reducer: {
@@ -12,6 +14,8 @@ const store = configureStore({
     user: userReducer,
     cart: cartReducer,
     futsalCourt: futsalCourtReducer,
+    order: orderReducer,
+    booking: bookingReducer,
   },
 });
 

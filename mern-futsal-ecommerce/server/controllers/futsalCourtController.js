@@ -1,5 +1,6 @@
 import asyncHandler from 'express-async-handler';
 import FutsalCourt from '../models/futsalCourtModel.js';
+import cloudinary from '../config/cloudinary.js';
 
 // @desc    Get all futsal courts
 // @route   GET /api/futsal-courts
@@ -35,6 +36,7 @@ export const createCourt = asyncHandler(async (req, res) => {
     openingTime,
     closingTime,
     availableDays,
+    image,
   } = req.body;
 
   // Validate required fields
@@ -55,6 +57,22 @@ export const createCourt = asyncHandler(async (req, res) => {
     throw new Error('Price must be greater than 0');
   }
 
+  // Upload image to Cloudinary if image is provided
+  let imageUrl = '/images/default-court.jpg';
+  if (image && image.startsWith('data:image')) {
+    try {
+      const uploadResponse = await cloudinary.uploader.upload(image, {
+        folder: 'futsal-courts',
+        resource_type: 'auto',
+      });
+      imageUrl = uploadResponse.secure_url;
+    } catch (error) {
+      console.error('Cloudinary upload error:', error);
+      res.status(400);
+      throw new Error('Failed to upload image');
+    }
+  }
+
   // Create court with validated data
   const court = new FutsalCourt({
     name,
@@ -65,6 +83,7 @@ export const createCourt = asyncHandler(async (req, res) => {
     openingTime,
     closingTime,
     availableDays: Array.isArray(availableDays) ? availableDays : [],
+    image: imageUrl,
   });
 
   const createdCourt = await court.save();
@@ -87,6 +106,7 @@ export const updateCourt = asyncHandler(async (req, res) => {
       openingTime,
       closingTime,
       availableDays,
+      image,
     } = req.body;
 
     // Validate court type if provided
@@ -101,6 +121,29 @@ export const updateCourt = asyncHandler(async (req, res) => {
       throw new Error('Price must be greater than 0');
     }
 
+    // Handle image upload if new image is provided
+    let imageUrl = court.image;
+    if (image && image !== court.image) {
+      try {
+        // Delete old image from Cloudinary if it exists
+        if (court.image && !court.image.startsWith('/images/')) {
+          const publicId = court.image.split('/').pop().split('.')[0];
+          await cloudinary.uploader.destroy(`futsal-courts/${publicId}`);
+        }
+
+        // Upload new image
+        const uploadResponse = await cloudinary.uploader.upload(image, {
+          folder: 'futsal-courts',
+          resource_type: 'auto',
+        });
+        imageUrl = uploadResponse.secure_url;
+      } catch (error) {
+        console.error('Cloudinary upload error:', error);
+        res.status(400);
+        throw new Error('Failed to upload image');
+      }
+    }
+
     court.name = name || court.name;
     court.type = type || court.type;
     court.pricePerHour = pricePerHour || court.pricePerHour;
@@ -109,6 +152,7 @@ export const updateCourt = asyncHandler(async (req, res) => {
     court.openingTime = openingTime || court.openingTime;
     court.closingTime = closingTime || court.closingTime;
     court.availableDays = Array.isArray(availableDays) ? availableDays : court.availableDays;
+    court.image = imageUrl;
 
     const updatedCourt = await court.save();
     res.json(updatedCourt);
@@ -125,6 +169,16 @@ export const deleteCourt = asyncHandler(async (req, res) => {
   const court = await FutsalCourt.findById(req.params.id);
 
   if (court) {
+    // Delete image from Cloudinary if it exists
+    if (court.image && !court.image.startsWith('/images/')) {
+      try {
+        const publicId = court.image.split('/').pop().split('.')[0];
+        await cloudinary.uploader.destroy(`futsal-courts/${publicId}`);
+      } catch (error) {
+        console.error('Failed to delete image from Cloudinary:', error);
+      }
+    }
+
     await court.deleteOne();
     res.json({ message: 'Court removed' });
   } else {

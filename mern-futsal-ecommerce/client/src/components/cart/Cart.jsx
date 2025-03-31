@@ -62,7 +62,7 @@ const Cart = () => {
                 <div className="ml-6 flex-1">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-medium text-gray-900">{item.name}</h3>
-                    <p className="text-lg font-medium text-blue-600">${(item.price * item.quantity).toFixed(2)}</p>
+                    <p className="text-lg font-medium text-blue-600">Rs {(item.price * item.quantity).toFixed(2)}</p>
                   </div>
                   <p className="mt-1 text-sm text-gray-500">{item.brand}</p>
                   <div className="mt-4 flex items-center justify-between">
@@ -95,7 +95,7 @@ const Cart = () => {
           <div className="p-6 bg-gray-50">
             <div className="flex items-center justify-between">
               <p className="text-xl font-medium text-gray-900">Total</p>
-              <p className="text-2xl font-bold text-blue-600">${calculateTotal()}</p>
+              <p className="text-2xl font-bold text-blue-600">Rs {calculateTotal()}</p>
             </div>
             <div className="mt-6">
               <Link

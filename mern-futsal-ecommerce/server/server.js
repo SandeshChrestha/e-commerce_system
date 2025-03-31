@@ -13,6 +13,8 @@ import mongoose from 'mongoose';
 import userRoutes from './routes/userRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import futsalCourtRoutes from './routes/futsalCourtRoutes.js';
+import bookingRoutes from './routes/bookingRoutes.js';
+import orderRoutes from './routes/orderRoutes.js';
 
 // Get the directory path
 const __filename = fileURLToPath(import.meta.url);
@@ -40,6 +42,8 @@ app.use(morgan('dev'));
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/futsal-courts', futsalCourtRoutes);
+app.use('/api/bookings', bookingRoutes);
+app.use('/api/orders', orderRoutes);
 
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, '/uploads')));

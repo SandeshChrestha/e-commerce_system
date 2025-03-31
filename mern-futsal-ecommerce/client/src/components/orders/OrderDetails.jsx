@@ -130,7 +130,7 @@ const OrderDetails = () => {
                       {item.name}
                     </h3>
                     <p className="text-gray-600">
-                      {item.quantity} x ${item.price} = $
+                      {item.quantity} x Rs {item.price} = Rs
                       {(item.quantity * item.price).toFixed(2)}
                     </p>
                   </div>
@@ -140,15 +140,15 @@ const OrderDetails = () => {
               <div className="border-t border-gray-200 pt-4 space-y-2">
                 <div className="flex justify-between text-gray-600">
                   <span>Items Price:</span>
-                  <span>${order.itemsPrice.toFixed(2)}</span>
+                  <span>Rs {order.itemsPrice.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Tax:</span>
-                  <span>${order.taxPrice.toFixed(2)}</span>
+                  <span>Rs {order.taxPrice.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-xl font-bold text-gray-900">
                   <span>Total:</span>
-                  <span>${order.totalPrice.toFixed(2)}</span>
+                  <span>Rs {order.totalPrice.toFixed(2)}</span>
                 </div>
               </div>
             </div>

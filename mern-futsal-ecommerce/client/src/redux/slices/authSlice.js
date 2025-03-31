@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import axios from '../../utils/axios';
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -10,28 +10,14 @@ const userFromStorage = localStorage.getItem('user')
 
 export const login = createAsyncThunk(
   'auth/login',
-  async ({ email, password }, { rejectWithValue }) => {
+  async (credentials, { rejectWithValue }) => {
     try {
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      };
-
-      const { data } = await axios.post(
-        `${API_URL}/users/login`,
-        { email, password },
-        config
-      );
-
-      localStorage.setItem('user', JSON.stringify(data));
-      return data;
+      const response = await axios.post('/api/users/login', credentials);
+      // Store token in localStorage
+      localStorage.setItem('token', response.data.token);
+      return response.data;
     } catch (error) {
-      return rejectWithValue(
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message
-      );
+      return rejectWithValue(error.response.data);
     }
   }
 );
@@ -97,17 +83,24 @@ export const updateProfile = createAsyncThunk(
   }
 );
 
+const initialState = {
+  user: userFromStorage,
+  token: localStorage.getItem('token'),
+  isAuthenticated: false,
+  loading: false,
+  error: null,
+};
+
 const authSlice = createSlice({
   name: 'auth',
-  initialState: {
-    user: userFromStorage,
-    loading: false,
-    error: null,
-  },
+  initialState,
   reducers: {
     logout: (state) => {
+      localStorage.removeItem('token');
       localStorage.removeItem('user');
       state.user = null;
+      state.token = null;
+      state.isAuthenticated = false;
       state.loading = false;
       state.error = null;
     },
@@ -125,10 +118,12 @@ const authSlice = createSlice({
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload;
+        state.token = action.payload.token;
+        state.isAuthenticated = true;
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload?.message || 'Login failed';
       })
       // Register
       .addCase(register.pending, (state) => {

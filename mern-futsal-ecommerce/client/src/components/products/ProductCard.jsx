@@ -33,7 +33,7 @@ const ProductCard = ({ product }) => {
         </p>
         <div className="flex items-center justify-between">
           <div>
-            <span className="text-xl font-bold text-blue-600">${product.price}</span>
+            <span className="text-xl font-bold text-blue-600">Rs {product.price}</span>
             <span className="text-sm text-gray-500 ml-2">({product.brand})</span>
           </div>
           <div className="flex space-x-2">

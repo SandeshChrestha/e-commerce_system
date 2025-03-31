@@ -6,55 +6,64 @@ import 'react-toastify/dist/ReactToastify.css';
 import store from './redux/store';
 
 // Layout Components
-import Header from './components/layout/Header';
+import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 
 // Auth Components
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
-import Profile from './components/pages/Profile';
-import ProtectedRoute from './components/auth/ProtectedRoute';
-import AdminRoute from './components/auth/AdminRoute';
+import Profile from './components/auth/Profile';
 
 // Product Components
 import ProductList from './components/products/ProductList';
 import ProductDetails from './components/products/ProductDetails';
 import Home from './components/pages/Home';
+import FutsalCourts from './components/pages/FutsalCourts';
+import Cart from './components/cart/Cart';
+import Checkout from './components/checkout/Checkout';
+
+// Booking Components
+import BookingForm from './components/booking/BookingForm';
+import BookingsManagement from './components/admin/BookingsManagement';
+import MyBookings from './components/booking/MyBookings';
+
+// Admin Components
 import AdminDashboard from './components/admin/AdminDashboard';
 import AdminProductList from './components/admin/AdminProductList';
 import AdminProductForm from './components/admin/AdminProductForm';
+import AdminOrderList from './components/admin/AdminOrderList';
 import AdminUserList from './components/admin/AdminUserList';
-import AdminUserForm from './components/admin/AdminUserForm';
 import AdminCourtList from './components/admin/AdminCourtList';
 import AdminCourtForm from './components/admin/AdminCourtForm';
-import Cart from './components/cart/Cart';
-import Booking from './components/booking/Booking';
+import CourtsManagement from './components/admin/CourtsManagement';
+
+// Protected Route Component
+import ProtectedRoute from './components/routes/ProtectedRoute';
+import AdminRoute from './components/routes/AdminRoute';
 
 const App = () => {
   return (
     <Provider store={store}>
       <Router>
-        <div className="min-h-screen flex flex-col">
-          <Header />
+        <div className="flex flex-col min-h-screen">
+          <Navbar />
           <main className="flex-grow">
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Home />} />
               <Route path="/products" element={<ProductList />} />
-              <Route path="/product/:id" element={<ProductDetails />} />
+              <Route path="/products/:id" element={<ProductDetails />} />
+              <Route path="/futsal-courts" element={<FutsalCourts />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/booking" element={<Booking />} />
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <Profile />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/cart" element={<Cart />} />
-              
+
+              {/* Protected Routes */}
+              <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+              <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/booking/:id" element={<ProtectedRoute><BookingForm /></ProtectedRoute>} />
+              <Route path="/my-bookings" element={<ProtectedRoute><MyBookings /></ProtectedRoute>} />
+
               {/* Admin Routes */}
               <Route
                 path="/admin"
@@ -81,10 +90,18 @@ const App = () => {
                 }
               />
               <Route
-                path="/admin/products/edit/:id"
+                path="/admin/products/:id/edit"
                 element={
                   <AdminRoute>
                     <AdminProductForm />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/orders"
+                element={
+                  <AdminRoute>
+                    <AdminOrderList />
                   </AdminRoute>
                 }
               />
@@ -96,23 +113,6 @@ const App = () => {
                   </AdminRoute>
                 }
               />
-              <Route
-                path="/admin/users/new"
-                element={
-                  <AdminRoute>
-                    <AdminUserForm />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/admin/users/edit/:id"
-                element={
-                  <AdminRoute>
-                    <AdminUserForm />
-                  </AdminRoute>
-                }
-              />
-              {/* Court Management Routes */}
               <Route
                 path="/admin/courts"
                 element={
@@ -130,28 +130,25 @@ const App = () => {
                 }
               />
               <Route
-                path="/admin/courts/edit/:id"
+                path="/admin/courts/:id/edit"
                 element={
                   <AdminRoute>
                     <AdminCourtForm />
                   </AdminRoute>
                 }
               />
+              <Route
+                path="/admin/bookings"
+                element={
+                  <AdminRoute>
+                    <BookingsManagement />
+                  </AdminRoute>
+                }
+              />
             </Routes>
           </main>
           <Footer />
-          <ToastContainer
-            position="bottom-right"
-            autoClose={3000}
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-            theme="light"
-          />
+          <ToastContainer />
         </div>
       </Router>
     </Provider>

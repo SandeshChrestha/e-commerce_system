@@ -1,138 +1,71 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+// Configure axios baseURL
+axios.defaults.baseURL = 'http://localhost:5000';
 
+// Helper function to get auth config
+const getConfig = (getState) => {
+  const { user } = getState().auth;
+  
+  if (!user) {
+    throw new Error('Please login first');
+  }
+
+  if (!user.token) {
+    throw new Error('Authentication token not found');
+  }
+
+  return {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${user.token}`,
+    },
+  };
+};
+
+// Async thunks
 export const createOrder = createAsyncThunk(
   'order/createOrder',
-  async (orderData, { getState, rejectWithValue }) => {
+  async (orderData, { rejectWithValue, getState }) => {
     try {
-      const {
-        auth: { user },
-      } = getState();
-
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${user.token}`,
-        },
-      };
-
-      const { data } = await axios.post(`${API_URL}/orders`, orderData, config);
+      const { data } = await axios.post('/api/orders', orderData, getConfig(getState));
       return data;
     } catch (error) {
       return rejectWithValue(
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message
+        error.response?.data?.message || error.message || 'Failed to create order'
       );
     }
   }
 );
 
-export const getOrderDetails = createAsyncThunk(
-  'order/getOrderDetails',
-  async (orderId, { getState, rejectWithValue }) => {
+export const fetchOrders = createAsyncThunk(
+  'order/fetchOrders',
+  async (_, { rejectWithValue, getState }) => {
     try {
-      const {
-        auth: { user },
-      } = getState();
-
-      const config = {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
-      };
-
-      const { data } = await axios.get(`${API_URL}/orders/${orderId}`, config);
+      const { data } = await axios.get('/api/orders', getConfig(getState));
       return data;
     } catch (error) {
       return rejectWithValue(
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message
+        error.response?.data?.message || error.message || 'Failed to fetch orders'
       );
     }
   }
 );
 
-export const getMyOrders = createAsyncThunk(
-  'order/getMyOrders',
-  async (_, { getState, rejectWithValue }) => {
+export const updateOrderStatus = createAsyncThunk(
+  'order/updateOrderStatus',
+  async ({ orderId, status }, { rejectWithValue, getState }) => {
     try {
-      const {
-        auth: { user },
-      } = getState();
-
-      const config = {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
-      };
-
-      const { data } = await axios.get(`${API_URL}/orders/myorders`, config);
-      return data;
-    } catch (error) {
-      return rejectWithValue(
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message
-      );
-    }
-  }
-);
-
-export const getAllOrders = createAsyncThunk(
-  'order/getAllOrders',
-  async (_, { getState, rejectWithValue }) => {
-    try {
-      const {
-        auth: { user },
-      } = getState();
-
-      const config = {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
-      };
-
-      const { data } = await axios.get(`${API_URL}/orders`, config);
-      return data;
-    } catch (error) {
-      return rejectWithValue(
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message
-      );
-    }
-  }
-);
-
-export const updateOrderToDelivered = createAsyncThunk(
-  'order/updateOrderToDelivered',
-  async (orderId, { getState, rejectWithValue }) => {
-    try {
-      const {
-        auth: { user },
-      } = getState();
-
-      const config = {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
-      };
-
       const { data } = await axios.put(
-        `${API_URL}/orders/${orderId}/deliver`,
-        {},
-        config
+        `/api/orders/${orderId}/status`,
+        { status },
+        getConfig(getState)
       );
       return data;
     } catch (error) {
       return rejectWithValue(
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message
+        error.response?.data?.message || error.message || 'Failed to update order status'
       );
     }
   }
@@ -142,95 +75,73 @@ const orderSlice = createSlice({
   name: 'order',
   initialState: {
     orders: [],
-    order: null,
     loading: false,
     error: null,
     success: false,
   },
   reducers: {
-    clearOrder: (state) => {
-      state.order = null;
+    reset: (state) => {
+      state.loading = false;
       state.error = null;
       state.success = false;
     },
     clearError: (state) => {
       state.error = null;
     },
-    resetSuccess: (state) => {
+    clearSuccess: (state) => {
       state.success = false;
     },
   },
   extraReducers: (builder) => {
     builder
-      // Create Order
+      // Create order
       .addCase(createOrder.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(createOrder.fulfilled, (state, action) => {
         state.loading = false;
-        state.order = action.payload;
+        state.orders = [...state.orders, action.payload];
         state.success = true;
+        state.error = null;
       })
       .addCase(createOrder.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-      // Get Order Details
-      .addCase(getOrderDetails.pending, (state) => {
+      // Fetch orders
+      .addCase(fetchOrders.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(getOrderDetails.fulfilled, (state, action) => {
-        state.loading = false;
-        state.order = action.payload;
-      })
-      .addCase(getOrderDetails.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-      // Get My Orders
-      .addCase(getMyOrders.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getMyOrders.fulfilled, (state, action) => {
+      .addCase(fetchOrders.fulfilled, (state, action) => {
         state.loading = false;
         state.orders = action.payload;
+        state.error = null;
       })
-      .addCase(getMyOrders.rejected, (state, action) => {
+      .addCase(fetchOrders.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-      // Get All Orders (Admin)
-      .addCase(getAllOrders.pending, (state) => {
+      // Update order status
+      .addCase(updateOrderStatus.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(getAllOrders.fulfilled, (state, action) => {
+      .addCase(updateOrderStatus.fulfilled, (state, action) => {
         state.loading = false;
-        state.orders = action.payload;
-      })
-      .addCase(getAllOrders.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-      // Update Order to Delivered
-      .addCase(updateOrderToDelivered.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(updateOrderToDelivered.fulfilled, (state, action) => {
-        state.loading = false;
-        state.order = action.payload;
+        state.orders = state.orders.map((order) =>
+          order._id === action.payload._id ? action.payload : order
+        );
         state.success = true;
+        state.error = null;
       })
-      .addCase(updateOrderToDelivered.rejected, (state, action) => {
+      .addCase(updateOrderStatus.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
   },
 });
 
-export const { clearOrder, clearError, resetSuccess } = orderSlice.actions;
+export const { reset, clearError, clearSuccess } = orderSlice.actions;
 export default orderSlice.reducer; 

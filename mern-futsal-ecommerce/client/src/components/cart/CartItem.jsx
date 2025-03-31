@@ -12,7 +12,7 @@ const CartItem = ({ item, onQuantityChange, onRemove }) => {
 
       <div className="flex-1 ml-4">
         <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
-        <p className="text-gray-600">${item.price}</p>
+        <p className="text-gray-600">Rs {item.price}</p>
       </div>
 
       <div className="flex items-center space-x-4">
@@ -48,7 +48,7 @@ const CartItem = ({ item, onQuantityChange, onRemove }) => {
 
       <div className="ml-4 text-right">
         <p className="text-lg font-semibold text-gray-900">
-          ${(item.price * item.quantity).toFixed(2)}
+          Rs {(item.price * item.quantity).toFixed(2)}
         </p>
       </div>
     </div>
