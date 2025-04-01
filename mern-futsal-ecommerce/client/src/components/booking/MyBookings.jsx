@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getAllBookings } from '../../redux/slices/bookingSlice';
+import { fetchBookings } from '../../redux/slices/bookingSlice';
 import { toast } from 'react-toastify';
 
 const MyBookings = () => {
@@ -8,7 +8,7 @@ const MyBookings = () => {
   const { bookings, loading, error } = useSelector((state) => state.booking);
 
   useEffect(() => {
-    dispatch(getAllBookings());
+    dispatch(fetchBookings());
   }, [dispatch]);
 
   if (loading) {

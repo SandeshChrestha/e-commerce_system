@@ -43,7 +43,7 @@ export const fetchBookings = createAsyncThunk(
   'booking/fetchBookings',
   async (_, { rejectWithValue, getState }) => {
     try {
-      const { data } = await axios.get('/api/bookings', getConfig(getState));
+      const { data } = await axios.get('/api/bookings/mybookings', getConfig(getState));
       return data;
     } catch (error) {
       return rejectWithValue(

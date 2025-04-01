@@ -27,9 +27,9 @@ const getConfig = (getState) => {
 // Async thunks
 export const fetchCourts = createAsyncThunk(
   'futsalCourt/fetchCourts',
-  async (_, { rejectWithValue, getState }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const { data } = await axios.get('/api/futsal-courts', getConfig(getState));
+      const { data } = await axios.get('/api/futsal-courts');
       return data;
     } catch (error) {
       return rejectWithValue(

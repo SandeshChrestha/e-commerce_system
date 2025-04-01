@@ -82,7 +82,7 @@ const App = () => {
                 }
               />
               <Route
-                path="/admin/products/new"
+                path="/admin/products/create"
                 element={
                   <AdminRoute>
                     <AdminProductForm />

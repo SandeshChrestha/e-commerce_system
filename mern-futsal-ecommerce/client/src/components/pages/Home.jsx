@@ -13,21 +13,21 @@ const Home = () => {
     {
       name: 'Futsal Shoes',
       slug: 'shoes',
-      image: `https://res.cloudinary.com/${cloudName}/image/upload/v1709721600/futsal-shoes.jpg`,
+      image: 'https://res.cloudinary.com/db0styhyf/image/upload/v1743503529/shoes_rcjwy4.jpg',
       description: 'High-quality futsal shoes for optimal performance',
       fallbackImage: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" fill="%23e5e7eb"%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="24" fill="%236b7280"%3EFutsal Shoes%3C/text%3E%3C/svg%3E'
     },
     {
       name: 'Futsal Balls',
       slug: 'balls',
-      image: `https://res.cloudinary.com/${cloudName}/image/upload/v1709721600/futsal-balls.jpg`,
+      image: 'https://res.cloudinary.com/db0styhyf/image/upload/v1743503529/ball_kwrqe4.jpg',
       description: 'Professional futsal balls for the perfect game',
       fallbackImage: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" fill="%23e5e7eb"%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="24" fill="%236b7280"%3EFutsal Balls%3C/text%3E%3C/svg%3E'
     },
     {
       name: 'Accessories',
       slug: 'accessories',
-      image: `https://res.cloudinary.com/${cloudName}/image/upload/v1709721600/futsal-accessories.jpg`,
+      image: 'https://res.cloudinary.com/db0styhyf/image/upload/v1743503530/accessories_bdgrpo.jpg',
       description: 'Essential accessories for futsal players',
       fallbackImage: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" fill="%23e5e7eb"%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="24" fill="%236b7280"%3EAccessories%3C/text%3E%3C/svg%3E'
     }
@@ -45,8 +45,19 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="relative bg-blue-600">
-        <div className="max-w-7xl mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8">
+      <div className="relative">
+        {/* Background Image */}
+        <div className="absolute inset-0">
+          <img
+            src="https://res.cloudinary.com/db0styhyf/image/upload/v1743502712/american-football-american-football-player-professional-sport-stadium_wpknj0.jpg"
+            alt="Futsal Hero"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+        </div>
+
+        {/* Content */}
+        <div className="relative max-w-7xl mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
             Welcome to Futsal Shop
           </h1>
@@ -110,7 +121,7 @@ const Home = () => {
           <div className="mt-8 flex lg:mt-0 lg:flex-shrink-0">
             <div className="inline-flex rounded-md shadow">
               <Link
-                to="/register"
+                to="/products"
                 className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
               >
                 Get started

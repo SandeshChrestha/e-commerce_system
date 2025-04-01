@@ -8,11 +8,34 @@ import FutsalCourt from '../models/futsalCourtModel.js';
 const createBooking = asyncHandler(async (req, res) => {
   const { futsalCourt, bookingDate, startTime, endTime, notes } = req.body;
 
+  // Validate required fields
+  if (!futsalCourt || !bookingDate || !startTime || !endTime) {
+    res.status(400);
+    throw new Error('Please provide all required fields');
+  }
+
   // Check if the court exists
   const court = await FutsalCourt.findById(futsalCourt);
   if (!court) {
     res.status(404);
     throw new Error('Futsal court not found');
+  }
+
+  // Validate booking date
+  const bookingDateObj = new Date(bookingDate);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  if (bookingDateObj < today) {
+    res.status(400);
+    throw new Error('Booking date cannot be in the past');
+  }
+
+  // Validate time format
+  const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+  if (!timeRegex.test(startTime) || !timeRegex.test(endTime)) {
+    res.status(400);
+    throw new Error('Invalid time format');
   }
 
   // Check if the time slot is available
@@ -149,7 +172,7 @@ const deleteBooking = asyncHandler(async (req, res) => {
     throw new Error('Booking not found');
   }
 
-  await booking.remove();
+  await booking.deleteOne();
   res.json({ message: 'Booking removed' });
 });
 

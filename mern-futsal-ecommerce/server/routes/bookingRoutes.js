@@ -12,6 +12,7 @@ import { protect, admin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
+// User routes
 router.route('/').post(protect, createBooking);
 router.route('/mybookings').get(protect, getMyBookings);
 router.route('/:id').get(protect, getBookingById);
