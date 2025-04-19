@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { fetchCourts } from '../../redux/slices/futsalCourtSlice';
 import { fetchBookings } from '../../redux/slices/futsalCourtSlice';
+import CryptoJS from 'crypto-js';
 
 const FutsalCourts = () => {
   const dispatch = useDispatch();
@@ -11,6 +12,10 @@ const FutsalCourts = () => {
   const [showBookingHistory, setShowBookingHistory] = useState(false);
   const [bookings, setBookings] = useState([]);
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
+
+  const generateEsewaSignature = (secretKey, data) => {
+    return CryptoJS.HmacSHA256(data, secretKey).toString(CryptoJS.enc.Base64);
+  };
 
   useEffect(() => {
     dispatch(fetchCourts());
@@ -28,6 +33,47 @@ const FutsalCourts = () => {
     } catch (error) {
       console.error('Failed to fetch bookings:', error);
     }
+  };
+
+  const handleEsewaPayment = (booking) => {
+    const path = 'https://rc-epay.esewa.com.np/api/epay/main/v2/form';
+    const transactionUuid = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const productCode = 'EPAYTEST';
+    const secretKey = '8gBm/:&EnhH.1/q'; // Test secret key
+
+    const signatureString = `total_amount=${booking.totalPrice},transaction_uuid=${transactionUuid},product_code=${productCode}`;
+    const signature = generateEsewaSignature(secretKey, signatureString);
+
+    const params = {
+      amount: booking.totalPrice.toString(),
+      tax_amount: '0',
+      total_amount: booking.totalPrice.toString(),
+      transaction_uuid: transactionUuid,
+      product_code: productCode,
+      product_service_charge: '0',
+      product_delivery_charge: '0',
+      success_url: `${window.location.origin}/payment/success`,
+      failure_url: `${window.location.origin}/payment/failure`,
+      signed_field_names: 'total_amount,transaction_uuid,product_code',
+      signature: signature
+    };
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = path;
+    form.target = '_blank';
+
+    Object.keys(params).forEach(key => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = params[key];
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
   };
 
   if (loading) {
@@ -81,6 +127,7 @@ const FutsalCourts = () => {
                           Pay on arrival
                         </button>
                         <button
+                          onClick={() => handleEsewaPayment(bookings[0])}
                           className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         >
                           Pay with e-sewa
