@@ -62,7 +62,7 @@ const Home = () => {
             Welcome to Sport Hub
           </h1>
           <p className="mt-6 text-xl text-blue-100 max-w-3xl">
-            Your one-stop destination for all futsal equipment and accessories with booking courts.
+            Your one-stop destination for all futsal equipment and accessories .
             
           </p>
           <div className="mt-10">
