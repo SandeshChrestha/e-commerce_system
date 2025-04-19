@@ -15,6 +15,11 @@ const FutsalCourts = () => {
   const [bookings, setBookings] = useState([]);
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
 
+  const handlePayOnArrival = () => {
+    toast.info('Please visit the futsal court for payment. Thank you!');
+    setShowPaymentOptions(false);
+  };
+
   const generateEsewaSignature = (secretKey, data) => {
     return CryptoJS.HmacSHA256(data, secretKey).toString(CryptoJS.enc.Base64);
   };
@@ -139,6 +144,7 @@ const FutsalCourts = () => {
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
                       <div className="py-1">
                         <button
+                          onClick={handlePayOnArrival}
                           className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         >
                           Pay on arrival
