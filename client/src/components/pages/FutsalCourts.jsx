@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { fetchCourts } from '../../redux/slices/futsalCourtSlice';
 import { fetchBookings } from '../../redux/slices/futsalCourtSlice';
 import CryptoJS from 'crypto-js';
+import { toast } from 'react-toastify';
 
 const FutsalCourts = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { courts, loading, error } = useSelector((state) => state.futsalCourt);
   const { user } = useSelector((state) => state.auth);
   const [showBookingHistory, setShowBookingHistory] = useState(false);
@@ -52,11 +54,18 @@ const FutsalCourts = () => {
       product_code: productCode,
       product_service_charge: '0',
       product_delivery_charge: '0',
-      success_url: `${window.location.origin}/payment/success`,
-      failure_url: `${window.location.origin}/payment/failure`,
+      success_url: `${window.location.origin}/success?method=esewa`,
+      failure_url: `${window.location.origin}/failure`,
       signed_field_names: 'total_amount,transaction_uuid,product_code',
       signature: signature
     };
+
+    // Store the transaction details in localStorage for success handling
+    localStorage.setItem('currentEsewaTransaction', JSON.stringify({
+      bookingId: booking._id,
+      amount: booking.totalPrice,
+      transactionUuid: transactionUuid
+    }));
 
     const form = document.createElement('form');
     form.method = 'POST';
@@ -74,6 +83,14 @@ const FutsalCourts = () => {
     document.body.appendChild(form);
     form.submit();
     document.body.removeChild(form);
+
+    // Show success message and redirect after a short delay
+    setTimeout(() => {
+      toast.success('Payment successful! Redirecting to home page...');
+      setTimeout(() => {
+        navigate('/');
+      }, 2000);
+    }, 1000);
   };
 
   if (loading) {

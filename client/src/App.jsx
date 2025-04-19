@@ -25,6 +25,9 @@ import FutsalCourts from './components/pages/FutsalCourts';
 import Cart from './components/cart/Cart';
 import Checkout from './components/checkout/Checkout';
 
+// Payment Components
+import PaymentSuccess from './components/payment/PaymentSuccess';
+
 // Booking Components
 import BookingForm from './components/booking/BookingForm';
 import BookingsManagement from './components/admin/BookingsManagement';
@@ -63,6 +66,8 @@ const App = () => {
               <Route path="/register" element={<Register />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/success" element={<PaymentSuccess />} />
+              <Route path="/failure" element={<PaymentSuccess />} />
 
               {/* Protected Routes */}
               <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
