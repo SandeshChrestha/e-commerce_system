@@ -40,19 +40,13 @@ const ProductCard = ({ product }) => {
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-500">{product.brand}</span>
           </div>
-          <div className="flex space-x-2">
+          <div>
             <button
               onClick={() => handleAddToCart(product)}
-              className="flex-1 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-colors duration-300 font-medium"
+              className="w-full bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-colors duration-300 font-medium"
             >
               Add to Cart
             </button>
-            <Link
-              to={`/checkout?product=${product._id}`}
-              className="flex-1 bg-green-600 text-white px-4 py-2.5 rounded-lg hover:bg-green-700 transition-colors duration-300 font-medium text-center"
-            >
-              Buy Now
-            </Link>
           </div>
         </div>
       </div>
