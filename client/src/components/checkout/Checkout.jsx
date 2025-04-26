@@ -62,6 +62,7 @@ const Checkout = () => {
     try {
       const orderData = {
         orderItems: items.map(item => ({
+          product: item._id,
           name: item.name,
           quantity: item.quantity,
           price: item.price

@@ -1,4 +1,5 @@
 import Order from '../models/orderModel.js';
+import Product from '../models/productModel.js';
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -17,6 +18,28 @@ export const createOrder = async (req, res) => {
       throw new Error('No order items');
     }
 
+    // Update product quantities
+    for (const item of orderItems) {
+      if (!item.product) {
+        res.status(400);
+        throw new Error('Product ID is required for each order item');
+      }
+
+      const product = await Product.findById(item.product);
+      if (!product) {
+        res.status(404);
+        throw new Error(`Product not found: ${item.name}`);
+      }
+      
+      if (product.countInStock < item.quantity) {
+        res.status(400);
+        throw new Error(`Not enough stock for product: ${item.name}`);
+      }
+      
+      product.countInStock -= item.quantity;
+      await product.save();
+    }
+
     const order = new Order({
       user: req.user._id,
       orderItems,
@@ -28,7 +51,11 @@ export const createOrder = async (req, res) => {
     const createdOrder = await order.save();
     res.status(201).json(createdOrder);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Order creation error:', error);
+    res.status(500).json({ 
+      message: error.message || 'Failed to create order',
+      error: error.stack 
+    });
   }
 };
 

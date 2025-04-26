@@ -38,7 +38,12 @@ const OrderCreate = () => {
     e.preventDefault();
 
     const order = {
-      orderItems: cartItems,
+      orderItems: cartItems.map(item => ({
+        product: item._id,
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price
+      })),
       shippingAddress,
       paymentMethod,
       itemsPrice: subtotal,
