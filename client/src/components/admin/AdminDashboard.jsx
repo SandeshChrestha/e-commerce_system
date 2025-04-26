@@ -49,7 +49,7 @@ const AdminDashboard = () => {
                 <p className="text-blue-600">Manage your product inventory</p>
               </Link>
               <Link
-                to="/admin/products/new"
+                to="/admin/products/create"
                 className="block bg-green-50 hover:bg-green-100 p-4 rounded-lg transition-colors"
               >
                 <h3 className="text-lg font-medium text-green-700">Add New Product</h3>
