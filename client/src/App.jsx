@@ -45,9 +45,10 @@ import CourtsManagement from './components/admin/CourtsManagement';
 import AdminOrders from './components/admin/AdminOrders';
 import ApplicationsManagement from './components/admin/ApplicationsManagement';
 
-// Protected Route Component
+// Route Components
 import ProtectedRoute from './components/routes/ProtectedRoute';
 import AdminRoute from './components/routes/AdminRoute';
+import AdminRestrictedRoute from './components/routes/AdminRestrictedRoute';
 
 const App = () => {
   return (
@@ -57,11 +58,41 @@ const App = () => {
           <Navbar />
           <main className="flex-grow">
             <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/products" element={<ProductList />} />
-              <Route path="/products/:id" element={<ProductDetails />} />
-              <Route path="/futsal-courts" element={<FutsalCourts />} />
+              {/* Public Routes (with admin restriction) */}
+              <Route 
+                path="/" 
+                element={
+                  <AdminRestrictedRoute>
+                    <Home />
+                  </AdminRestrictedRoute>
+                } 
+              />
+              <Route 
+                path="/products" 
+                element={
+                  <AdminRestrictedRoute>
+                    <ProductList />
+                  </AdminRestrictedRoute>
+                } 
+              />
+              <Route 
+                path="/products/:id" 
+                element={
+                  <AdminRestrictedRoute>
+                    <ProductDetails />
+                  </AdminRestrictedRoute>
+                } 
+              />
+              <Route 
+                path="/futsal-courts" 
+                element={
+                  <AdminRestrictedRoute>
+                    <FutsalCourts />
+                  </AdminRestrictedRoute>
+                } 
+              />
+              
+              {/* Auth Routes (no restriction needed) */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -69,12 +100,36 @@ const App = () => {
               <Route path="/success" element={<PaymentSuccess />} />
               <Route path="/failure" element={<PaymentSuccess />} />
 
-              {/* Protected Routes */}
-              <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
-              <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+              {/* Protected Routes (with admin restriction) */}
+              <Route path="/cart" element={
+                <ProtectedRoute>
+                  <AdminRestrictedRoute>
+                    <Cart />
+                  </AdminRestrictedRoute>
+                </ProtectedRoute>
+              } />
+              <Route path="/checkout" element={
+                <ProtectedRoute>
+                  <AdminRestrictedRoute>
+                    <Checkout />
+                  </AdminRestrictedRoute>
+                </ProtectedRoute>
+              } />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path="/booking/:id" element={<ProtectedRoute><BookingForm /></ProtectedRoute>} />
-              <Route path="/my-bookings" element={<ProtectedRoute><MyBookings /></ProtectedRoute>} />
+              <Route path="/booking/:id" element={
+                <ProtectedRoute>
+                  <AdminRestrictedRoute>
+                    <BookingForm />
+                  </AdminRestrictedRoute>
+                </ProtectedRoute>
+              } />
+              <Route path="/my-bookings" element={
+                <ProtectedRoute>
+                  <AdminRestrictedRoute>
+                    <MyBookings />
+                  </AdminRestrictedRoute>
+                </ProtectedRoute>
+              } />
 
               {/* Admin Routes */}
               <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />

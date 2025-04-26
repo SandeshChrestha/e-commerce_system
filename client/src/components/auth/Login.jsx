@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { login, clearError, sendOTP } from '../../redux/slices/authSlice';
+import { redirectBasedOnRole } from '../../utils/authUtils';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -12,9 +13,10 @@ const Login = () => {
   const navigate = useNavigate();
   const { loading, error, user } = useSelector((state) => state.auth);
 
+  // Redirect based on user role when user state changes
   useEffect(() => {
     if (user) {
-      navigate('/');
+      redirectBasedOnRole(user, navigate);
     }
   }, [user, navigate]);
 
@@ -31,7 +33,7 @@ const Login = () => {
     setShowVerificationMessage(false);
     try {
       await dispatch(login({ email, password })).unwrap();
-      navigate('/');
+      // Redirection is handled by the useEffect when user state updates
     } catch (err) {
       console.error('Login Error:', err);
       if (err?.message?.includes('verify your email')) {
@@ -137,13 +139,13 @@ const Login = () => {
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
             <div className="text-sm text-center mt-4">
-  <Link
-    to="/forgot-password"
-    className="font-medium text-blue-600 hover:text-blue-500"
-  >
-    Forgot your password?
-  </Link>
-</div>
+              <Link
+                to="/forgot-password"
+                className="font-medium text-blue-600 hover:text-blue-500"
+              >
+                Forgot your password?
+              </Link>
+            </div>
           </div>
         </form>
       </div>

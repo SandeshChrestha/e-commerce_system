@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
-import { register, verifyOTP, clearError } from '../../redux/slices/authSlice';
+import { register, verifyOTP, clearError, sendOTP } from '../../redux/slices/authSlice';
+import { redirectBasedOnRole } from '../../utils/authUtils';
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -14,13 +15,13 @@ const Register = () => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { loading, error, isAuthenticated, tempRegistration } = useSelector((state) => state.auth);
+  const { loading, error, isAuthenticated, tempRegistration, user } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/');
+    if (isAuthenticated && user) {
+      redirectBasedOnRole(user, navigate);
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   useEffect(() => {
     return () => {

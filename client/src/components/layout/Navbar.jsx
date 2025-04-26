@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../redux/slices/authSlice';
 import { FaShoppingCart, FaUser, FaSignOutAlt, FaCog } from 'react-icons/fa';
 import ApplicationForm from '../application/ApplicationForm';
+import { redirectBasedOnRole } from '../../utils/authUtils';
 
 const Navbar = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { cartItems = [] } = useSelector((state) => state.cart);
@@ -13,19 +16,29 @@ const Navbar = () => {
 
   const handleLogout = () => {
     dispatch(logout());
+    navigate('/login');
+    setIsMenuOpen(false);
+  };
+
+  const handleLogoClick = () => {
+    if (user) {
+      redirectBasedOnRole(user, navigate);
+    } else {
+      navigate('/');
+    }
   };
 
   const isAdmin = user?.isAdmin;
 
   return (
     <>
-      <nav className="bg-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-4">
+      <header className="bg-white shadow">
+        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex">
-              <Link to="/" className="flex items-center">
-                <span className="text-xl font-bold text-gray-800">Sport Hub</span>
-              </Link>
+              <div onClick={handleLogoClick} className="flex items-center cursor-pointer">
+                <span className="text-xl font-bold text-blue-600">Futsal Shop</span>
+              </div>
 
               {/* Regular user nav links (hidden for admin) */}
               {!isAdmin && (
@@ -128,8 +141,8 @@ const Navbar = () => {
               )}
             </div>
           </div>
-        </div>
-      </nav>
+        </nav>
+      </header>
 
       {/* Application Form Modal */}
       {showApplicationForm && (
