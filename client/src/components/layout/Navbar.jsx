@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../redux/slices/authSlice';
-import { FaShoppingCart, FaUser, FaSignOutAlt, FaCog } from 'react-icons/fa';
+import { FaShoppingCart, FaUser, FaSignOutAlt, FaCog, FaHeart } from 'react-icons/fa';
 import ApplicationForm from '../application/ApplicationForm';
 import { redirectBasedOnRole } from '../../utils/authUtils';
 
@@ -12,6 +12,7 @@ const Navbar = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { cartItems = [] } = useSelector((state) => state.cart);
+  const { items: favorites = [] } = useSelector((state) => state.favorite);
   const [showApplicationForm, setShowApplicationForm] = useState(false);
 
   const handleLogout = () => {
@@ -67,6 +68,18 @@ const Navbar = () => {
                 >
                   Apply
                 </button>
+              )}
+
+              {/* Favorites (hidden for admin) */}
+              {!isAdmin && user && (
+                <Link to="/favorites" className="relative">
+                  <FaHeart className="text-gray-600 hover:text-gray-900 text-xl" />
+                  {favorites.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {favorites.length}
+                    </span>
+                  )}
+                </Link>
               )}
 
               {/* Cart (hidden for admin) */}

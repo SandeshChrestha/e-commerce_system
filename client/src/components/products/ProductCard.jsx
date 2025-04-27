@@ -1,15 +1,30 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { addToCart } from '../../redux/slices/cartSlice';
+import { addToFavorites, removeFromFavorites } from '../../redux/slices/favoriteSlice';
 import { toast } from 'react-toastify';
+import { FaRegHeart, FaHeart } from 'react-icons/fa';
 
 const ProductCard = ({ product }) => {
   const dispatch = useDispatch();
+  const { items: favorites } = useSelector((state) => state.favorite);
+  const isFavorite = favorites.some(item => item._id === product._id);
 
   const handleAddToCart = (product) => {
     dispatch(addToCart(product));
     toast.success('Product added to cart!');
+  };
+
+  const handleToggleFavorite = (e) => {
+    e.stopPropagation();
+    if (isFavorite) {
+      dispatch(removeFromFavorites(product._id));
+      toast.info('Removed from favorites');
+    } else {
+      dispatch(addToFavorites(product));
+      toast.success('Added to favorites');
+    }
   };
 
   return (
@@ -28,6 +43,15 @@ const ProductCard = ({ product }) => {
             Rs {product.price}
           </span>
         </div>
+        <button
+          onClick={handleToggleFavorite}
+          className="absolute top-4 left-4 bg-white p-2 rounded-full shadow-md text-lg"
+        >
+          {isFavorite ? 
+            <FaHeart className="text-red-500" /> : 
+            <FaRegHeart className="text-gray-500" />
+          }
+        </button>
       </div>
       <div className="p-6">
         <h2 className="text-2xl font-bold text-gray-800 mb-2 line-clamp-1">
@@ -40,12 +64,22 @@ const ProductCard = ({ product }) => {
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-500">{product.brand}</span>
           </div>
-          <div>
+          <div className="space-y-2">
             <button
               onClick={() => handleAddToCart(product)}
               className="w-full bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-colors duration-300 font-medium"
             >
               Add to Cart
+            </button>
+            <button
+              onClick={handleToggleFavorite}
+              className={`w-full px-4 py-2.5 rounded-lg transition-colors duration-300 font-medium ${
+                isFavorite
+                  ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
             </button>
           </div>
         </div>

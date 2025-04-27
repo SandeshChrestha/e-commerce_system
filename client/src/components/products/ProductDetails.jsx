@@ -3,6 +3,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchProductDetails } from '../../redux/slices/productSlice';
 import { addToCart } from '../../redux/slices/cartSlice';
+import { addToFavorites, removeFromFavorites } from '../../redux/slices/favoriteSlice';
+import { FaRegHeart, FaHeart } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 
 const ProductDetails = () => {
   const [quantity, setQuantity] = useState(1);
@@ -12,6 +15,8 @@ const ProductDetails = () => {
 
   const { product, loading, error } = useSelector((state) => state.product);
   const { user } = useSelector((state) => state.auth);
+  const { items: favorites } = useSelector((state) => state.favorite);
+  const isFavorite = favorites.some(item => item._id === id);
 
   useEffect(() => {
     dispatch(fetchProductDetails(id));
@@ -34,6 +39,28 @@ const ProductDetails = () => {
       })
     );
     navigate('/cart');
+  };
+
+  const handleToggleFavorite = () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    if (isFavorite) {
+      dispatch(removeFromFavorites(product._id));
+      toast.info('Removed from favorites');
+    } else {
+      dispatch(addToFavorites({
+        _id: product._id,
+        name: product.name,
+        image: product.imageUrl,
+        price: product.price,
+        description: product.description,
+        brand: product.brand,
+      }));
+      toast.success('Added to favorites');
+    }
   };
 
   if (loading) {
@@ -60,12 +87,23 @@ const ProductDetails = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
+          <div className="relative">
             <img
               src={product.imageUrl}
               alt={product.name}
               className="w-full rounded-lg shadow-lg"
             />
+            {user && (
+              <button
+                onClick={handleToggleFavorite}
+                className="absolute top-4 right-4 bg-white p-3 rounded-full shadow-md"
+              >
+                {isFavorite ? 
+                  <FaHeart className="text-red-500 text-xl" /> : 
+                  <FaRegHeart className="text-gray-500 text-xl" />
+                }
+              </button>
+            )}
           </div>
           <div>
             <h1 className="text-3xl font-bold mb-4">
@@ -106,15 +144,30 @@ const ProductDetails = () => {
                 className="w-24 border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            <button
-              onClick={handleAddToCart}
-              disabled={product.countInStock === 0}
-              className={`w-full bg-blue-600 text-white py-3 px-6 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                product.countInStock === 0 ? 'cursor-not-allowed' : ''
-              }`}
-            >
-              {product.countInStock === 0 ? 'Out of Stock' : 'Add to Cart'}
-            </button>
+            <div className="space-y-3">
+              <button
+                onClick={handleAddToCart}
+                disabled={product.countInStock === 0}
+                className={`w-full bg-blue-600 text-white py-3 px-6 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                  product.countInStock === 0 ? 'cursor-not-allowed opacity-60' : ''
+                }`}
+              >
+                {product.countInStock === 0 ? 'Out of Stock' : 'Add to Cart'}
+              </button>
+              {user && (
+                <button
+                  onClick={handleToggleFavorite}
+                  className={`w-full py-3 px-6 rounded-md flex justify-center items-center ${
+                    isFavorite 
+                      ? 'bg-red-100 text-red-600 hover:bg-red-200' 
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {isFavorite ? <FaHeart className="mr-2" /> : <FaRegHeart className="mr-2" />}
+                  {isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

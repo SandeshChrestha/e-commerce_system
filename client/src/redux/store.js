@@ -7,6 +7,7 @@ import futsalCourtReducer from './slices/futsalCourtSlice';
 import orderReducer from './slices/orderSlice';
 import bookingReducer from './slices/bookingSlice';
 import applicationReducer from './slices/applicationSlice';
+import favoriteReducer from './slices/favoriteSlice';
 
 const store = configureStore({
   reducer: {
@@ -18,6 +19,7 @@ const store = configureStore({
     order: orderReducer,
     booking: bookingReducer,
     application: applicationReducer,
+    favorite: favoriteReducer,
   },
 });
 

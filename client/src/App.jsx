@@ -24,6 +24,7 @@ import Home from './components/pages/Home';
 import FutsalCourts from './components/pages/FutsalCourts';
 import Cart from './components/cart/Cart';
 import Checkout from './components/checkout/Checkout';
+import Favorites from './components/favorites/Favorites';
 
 // Payment Components
 import PaymentSuccess from './components/payment/PaymentSuccess';
@@ -105,6 +106,13 @@ const App = () => {
                 <ProtectedRoute>
                   <AdminRestrictedRoute>
                     <Cart />
+                  </AdminRestrictedRoute>
+                </ProtectedRoute>
+              } />
+              <Route path="/favorites" element={
+                <ProtectedRoute>
+                  <AdminRestrictedRoute>
+                    <Favorites />
                   </AdminRestrictedRoute>
                 </ProtectedRoute>
               } />
